@@ -66,3 +66,20 @@ customSettings: {}
 global:
   # optionally use namespace as dbname
   namespacedDatabases: false
+
+prometheusExporter:
+  enabled: false
+  image:
+    repository: spreaker/prometheus-pgbouncer-exporter
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 9127
+  user: "stats"
+  pass: "stats"
+  resources:
+    limits:
+      memory: 20Mi
+      cpu: 10m
+    requests:
+      memory: 20Mi
+      cpu: 10m

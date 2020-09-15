@@ -2,4 +2,7 @@
 {{- range $k, $v := .Values.users }}
 {{ $k | quote }} {{ $v | quote }}
 {{- end }}
+{{- if .Values.prometheusExporter.enabled }}
+"stats" "stats"
+{{- end }}
 {{- end }}

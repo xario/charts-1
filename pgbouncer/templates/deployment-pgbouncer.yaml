@@ -34,6 +34,11 @@ spec:
         {{- /* Using toJson instead of toYaml due to https://github.com/helm/helm/issues/3470  */ -}}
         {{- tpl (toJson .Values.spec.annotations) . | fromJson | toYaml |  nindent 8 }}
         {{- end }}
+        {{- if .Values.prometheusExporter.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: {{ .Values.prometheusExporter.port | quote }}
+        {{- end }}
     spec:
       affinity:
         {{- if eq .Values.antiAffinity "hard" }}
@@ -97,4 +102,24 @@ spec:
               readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+        {{- if .Values.prometheusExporter.enabled }}
+        - name: pgbouncer-prometheus-exporter
+          image: {{ .Values.prometheusExporter.image.repository }}:{{ .Values.prometheusExporter.image.tag }}
+          imagePullPolicy: {{ .Values.prometheusExporter.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.prometheusExporter.port }}
+          env:
+            - name: PGBOUNCER_EXPORTER_HOST
+              value: "0.0.0.0"
+            - name: PGBOUNCER_EXPORTER_PORT
+              value: {{ .Values.prometheusExporter.port | quote }}
+            - name: PGBOUNCER_PORT
+              value: {{ .Values.internalPort | quote }}
+            - name: PGBOUNCER_USER
+              value: {{ .Values.prometheusExporter.user | quote }}
+            - name: PGBOUNCER_PASS
+              value: {{ .Values.prometheusExporter.pass | quote }}
+
+          resources: {{ toYaml .Values.prometheusExporter.resources | nindent 12 }}
+        {{- end }}
 
